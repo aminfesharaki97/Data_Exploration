@@ -1,0 +1,87 @@
+---
+title: "Question 1 - Glass Identification"
+author: "Amin FEsharaki"
+date: "5/15/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+# The UC Irvine Machine Learning Repository contains a Glass Identification Data Set [https://archive.ics.uci.edu/ml/datasets/Glass+Identification]. The data consist of 214 glass samples labeled as one of seven class categories. There are nine predictors, including the refractive index and percentages of eight elements: Na, Mg, Al, Si, K, Ca, Ba, and Fe. 
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+```{r}
+#Glass data Set from UCI ML Repo can be found on https://archive.ics.uci.edu/ml/datasets/Glass+Identification
+library(mlbench) 
+library(Hmisc)
+library(e1071) 
+```
+
+```{r Data}
+data(Glass)
+#Subset Predictors only
+#Predictor distribution with box plots 
+data <- subset(Glass, select = -Type) #Retrieve only the 9 predictors 
+```
+
+# A) Using visualizations, explore the predictor variables to understand their distributions as well as the relationships between predictors. 
+```{r Distribution} 
+
+par(mfrow=c(3,3)) 
+for(i in 1:ncol(data)) { 
+  # Histogram to roughly illustrate distribution
+  x <- data[,i]
+  hist(x, 
+  main = paste("Histogram of ", colnames(data[i])),
+  xlab= '')
+   # Kernal Density to better show the distribution with peaks
+  k <- density(data[,i])
+  plot(k, 
+  main = paste("Kernal Density of ", colnames(data[i])),
+  xlab= '')
+  } 
+```
+**
+Ri, Na: Approximately normal with a slight right skew.   
+Mg: Bi modal and left skewed.  
+K: Bi modal and right skewed.    
+Si: Slightly left skewed.      
+Ai, Ca, Ba, Fe: Right skewed.  
+
+```{r scatter plots}
+#Investing predictor relationships with scatter plots
+pairs(data)
+```
+**The resulting output creates a scatter plot that is too difficult to accurately examine. However, we can roughly make out if the predictors are positively or negatively correlated. Therefore a correlation table will be made to further examine correlation. 
+
+```{r correlation}
+#Investing predictor relationships with correlation
+library(corrplot)
+corrplot(cor(data), method = 'number') #Corrplot package is used to create an easy to ready correlation table
+```
+**It is important to note that multicollinearity was not dealth with when the correlation plot was made. Furthermore, there is a very strong positive correlation between Ca and Ri (0.81), moderate positive correlation between Ba and Ai(0.48). Moderate to strong negative correlations include Si and Ri (-0.54), Ba and Mg (-0.49), and Ca and Mg (-0.44). The rest of the features have relatively insignificant correlations (compared to the ones just noted). In addition, most of the features are negatively correlated with each other.       
+
+# B) Do there appear to be any outliers in the data? Are any predictors skewed?
+
+```{r Outlier}
+par(mfrow=c(2,3)) 
+# Outlier detection with Box plots
+for(i in 1:ncol(data)) { 
+  x <- data[,i]
+  boxplot(x, 
+  main = paste("Box Plot of  ", colnames(data[i])))}
+```
+** According to the box plots, all of the predictors have outliers with the exception of Mg.     
+```{r Skewness}
+#Determination of skewness among predictors
+Skewness <-lapply(data, skewness)
+```
+** All predictors are skewed when computed. In addition, K, Ri, Ai, Ca, Ba, and Fe are right skewed while Mg and Si are left skewed. This can be further supported by the box plot and histogram visualizations shown above.    
+
+# C) Are there any relevant transformations of one or more predictors thatmight improve the classification model? 
+
+** There are a few transformations that can be utilized to improve the classification model. One way is to perform a log transformation (putting the data on a logarithmic scale). For data that is moderately skewed to the right, the square root method can be used to make it  normally distributed. Another method is to use a box cox transformation which uses a maximum likelihood estimation to determine the transformation parameter, which in turn, could help improve the classification model. In addition, PCA can also be used to improve the classification model by determining the optimal features for the data set. Lastly, for data that is already approximately normally distributed, centering and scaling can be implemented to reduce outliers in the data set.     
+
+

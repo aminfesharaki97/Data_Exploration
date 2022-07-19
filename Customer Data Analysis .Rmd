@@ -1,0 +1,45 @@
+
+---
+title: "Customer Data"
+author: "Amin Fesharaki"
+date: "7/25/2021"
+output:
+  pdf_document: default
+  word_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Installing Packages* 
+Data Transformation with "dplyr"
+Data Visualization with "ggplot2"
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+knitr::opts_chunk$set(fig.width = 5, fig.asp = 1/3)
+```
+
+
+*Set Working Directory to File Path*
+```{r}
+setwd("/Users/datascience/Desktop/Data Science/ADS 500B/Module 4")
+custdata <- read.csv("custdata.tsv", header = TRUE, sep='\t')
+```
+
+**2.1: Plot the Density of Income **
+
+```{r density}
+plot(density(custdata$income), #Density Plot
+xlab="Income", #Change the x-axis label
+ylab="Density", #y-axis label
+main="Density Plot of Customer Data Income") #Title
+```
+
+
+
+
+
+

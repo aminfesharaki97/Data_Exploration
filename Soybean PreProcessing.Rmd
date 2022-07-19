@@ -1,0 +1,73 @@
+---
+title: "Soybean PreProcessing"
+author: "Amin Fesharaki"
+date: "5/19/2022"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+# The soybean data can also be found at the UC Irvine Machine Learning Repository. Data were collected to predict disease in 683 soybeans. The 35 predictors are mostly categorical and include information on the environmental conditions and plant conditions. The outcome labels consist of 19 distinct classes. The data can be loaded via: library(mlbench)  
+```{r Data Import, include=FALSE}
+library(mlbench)
+library(caret)
+library(dplyr)
+library(e1071)
+data("Soybean")
+``` 
+# A) Investigate the frequency distributions for the categorical predictors. Are any of the distributions degenerate in the ways discussed earlier in this chapter? 
+```{r Distributions}
+# Display the Frequency Distributions for Soybean data set
+par(mfrow=c(3,7)) 
+for(i in 1:ncol(Soybean)) { 
+  x <- Soybean[,i]
+  plot(x, 
+  main = (colnames(Soybean[i])),
+  xlab= 'Count',
+  ylab= 'Frequency')
+  } 
+``` 
+
+```{r Near Zero Variance}
+#Find Near Zero Variance
+NZV <- nearZeroVar(Soybean, names = TRUE, saveMetrics = TRUE) #Return The full list of metrics
+NZV %>% filter_all(any_vars(. %in% c('TRUE'))) #Only returned rows with TRUE NZV
+```
+*  Degenerate Distribution occurs when there the random variable X has a single possible value resulting in a constant distribution with a probability of 1 for the variable to occur. Soybean summary shows that there is no predictor with a complete degenerate distribution. However, the visualizations of frequency distributions reveal that some predictors have near degenerate distributions, which can cause issues to the model. Additionally, zero variance predictors can also show predictors with degenerate distributions. Considering the code output above, the predictors with  degenerate distributions are **leaf.mild, mycellium, and scelortia**. 
+
+# B)	Roughly 18% of the data are missing. Are there particular predictors that are more likely to be missing? Is the pattern of missing data related to the classes (summarize NAs by class)? 
+```{r Missing}
+Missing_by_Predictor <- sapply(Soybean, function(x) sum(is.na(x))) # using sapply to find NA's and report the number of NA's for each predictor
+head(Missing_by_Predictor)
+```
+
+```{r Group Missing}
+# Group Missing By Class for individual predictors
+Group_By_Class <- aggregate(cbind(plant.stand,precip,temp,hail,crop.hist, area.dam,sever,seed.tmt,germ,plant.growth,leaves,leaf.halo,leaf.marg,leaf.size,leaf.shread,leaf.malf,leaf.mild,stem,lodging,stem.cankers,canker.lesion,fruiting.bodies,ext.decay,mycelium, int.discolor, sclerotia, fruit.pods, fruit.spots, seed, mold.growth,seed.discolor,seed.size,shriveling,roots) ~Class ,data=Soybean, function(x) {sum(is.na(x))},na.action=NULL) #Return a list of missing values based on class
+head(Group_By_Class)
+``` 
+* After grouping the data by class, there are a few classes that exhibit missing values for almost every predictor. These predictors are **2-4-d-injury, cyst-nematode, diaporthe-pod-&-stem-blight, herbicide-injury, and phytophthora-rot** 
+
+```{r Exclude Missing}
+#Subset classes with missing values (excluded)
+Remove <- subset(Soybean, Class!="2-4-d-injury" &  Class!="cyst-nematode" & Class!="diaporthe-pod-&-stem-blight"& Class!="herbicide-injury" & Class!="phytophthora-rot")
+head(sapply(Remove, function(x) sum(is.na(x)))) # using sapply to find NA's and report the number of NA's for each predictor
+``` 
+* This confirms that the 5 predictors listed above (2-4-d-injury, cyst-nematode, diaporthe-pod-&-stem-blight, herbicide-injury, and phytophthora-rot) were the reason why 18% of the values were missing. After removing these rows and recomputing the list of missing values, we see that there no more missing values in the entire dataset.  
+
+# C) Develop a strategy for handling missing data, either by eliminating predictors or imputation.
+* One strategy is to impute the missing data. You could impute the values by mean values, median values, or a constant values. Imputing values avoids the disadvantages/concerns that arise when deleting cases with missing values. There are many libraries/packages with an impute function for ease. 
+```{r Impute}
+Soybean_mean <- impute(Soybean, what = c("mean")) #Impute mean using e1017 package
+Soybean_median <- impute(Soybean, what = c("median")) #Impute mean using e1017 package
+``` 
+* Another strategy is to remove the 5 predictors from the data set. As shown previously, removing these predictors will eliminate all missing values.   
+```{r Remove Predictors}
+#Subset classes with missing values (excluded)
+Remove <- subset(Soybean, Class!="2-4-d-injury" &  Class!="cyst-nematode" & Class!="diaporthe-pod-&-stem-blight"& Class!="herbicide-injury" & Class!="phytophthora-rot")
+```
+
+

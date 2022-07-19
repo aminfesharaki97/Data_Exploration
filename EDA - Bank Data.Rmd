@@ -1,0 +1,111 @@
+---
+title: "Bar and Histogram Practice (with Normalization)"
+author: "Amin Fesharaki"
+date: "11/7/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# For Exercises 21–30, continue working with the bank_marketing_training data set. Use either Python or R to solve each problem.
+```{r}
+#Import Datasets
+bank_train <- read.csv(file = "/Users/datascience/Desktop/ADS 502 Data Sets/Website Data Sets/bank_marketing_training.csv")
+
+library(ggplot2)
+```
+
+## 21. Produce the following graphs. What is the strength of each graph? Weakness?
+
+#a. Bar graph of marital.  
+```{r}
+ggplot(bank_train, aes(marital)) + geom_bar() + coord_flip() #Bar graph that runs horizontal
+```
+** 
+Strength: Describes frequency distribution, display relative number/proportions of multiple categories, summarizes a large amount of data in visual, and easily interpretable form
+
+Weakness: Weakness: Often requires additional explanation, fails to expose key impacts and patterns of data, can be easily manipulated to give false impressions, and lacking a response variable to show further insights(in this specific case). 
+**
+#b. Bar graph of marital, with overlay of response.
+```{r}
+# Add a fill input to create a bar chart with overlay response
+ggplot(bank_train, aes(marital)) + geom_bar(aes(fill=response)) + coord_flip()
+```
+**
+Strength: Showing the distribution of the values of the categorical variable.
+
+Weakness: Not clear which category has the greater proportion of respondents
+**
+#c. Normalized bar graph of marital, with overlay of response.
+```{r}
+# Normalize by adding position = "fill" 
+ggplot(bank_train, aes(marital)) + geom_bar(aes(fill=response), position="fill")  + coord_flip()
+```
+**
+Strength: More easily compare the response proportions of the categorical variables.
+
+Weakness: Becomes more complicated if there are uneven class intervals, and using too many/few classes can mask important patterns in the data.
+**
+
+## 22. Using the graph from Exercise 21c, describe the relationship between marital and response.
+** When evaluating the bank marketing data, the graph from 21c indicates that the highest proportion of 'yes' responses came from the 'single' marital status. Moreover, 'divorced' and 'married' had the lowest 'yes' responses with similar proportions. However, the 'married' category appears to have reported a slightly lower amount than 'married'. Therefore, we can infer from the graph that targeting 'single' individuals would yield the most positve responses among other marital statuses.**
+
+##23. Do the following with the variables marital and response.
+a. Build a contingency table, being careful to have the correct variables representing the rows and columns. Report the counts and the column percentages.
+
+*Count
+```{r}
+#Create Table
+ct1 <- table(bank_train$response, bank_train$marital)
+# Add row and column totals to the table
+ct2 <- addmargins(A = ct1, FUN = list(total=sum))
+ct2
+```
+*Percentage:
+```{r}
+# prop.table to give proportion, margin = 2 to give percentages, round to 2 decimal points
+round(prop.table(ct1, margin =2)*100,2)
+```
+#b. Describe what the contingency table is telling you
+** The count table indicates that married people had the largest amount of yes and no responses due to its large class size. In addition, divorced had the lowest number of yes and no responses. Moreover, based on the contingency percentage table, we can see that all marital statuses reported similar low percentages of yes responses. However, single had the highest proportion (14.4%) of yes while married had the lowest proportion (9.9%).**
+
+## 24. Repeat the previous exercise, this time reporting the row percentages. Explain the difference between the interpretation of this table and the previous contingency table
+```{r}
+#Report Row Percentages for Contingency Table
+round(prop.table(ct1, margin =1)*100,2)
+```
+** Instead of reporting the percentage of yes and no responses for each marital status, the table above shows the percentages of marital status for each response. Looking at this table, we would conclude that married people had a significantly higher percentage of reporting yes (among all other statuses). However, this would be a false interpretation due to the unequal class sizes (married having the highest number of samples). On the contrast, the table results from Exercise 23.a shows that married status had the lowest proportion of yes responses.**
+
+##25. Produce the following graphs. What is the strength of each graph? Weakness?
+
+#a. Histogram of duration
+```{r}
+ggplot(bank_train, aes(duration)) + geom_histogram()
+```
+** 
+Strength: Insightful look at frequency distribution, simplistic, versatile.
+
+Weakness: Can present data that is misleading, limited to two sets of data.
+**
+#b. Histogram of duration, with overlay of response.
+```{r}
+ggplot (bank_train, aes(duration)) + geom_histogram(aes(fill=response), bins = 10 )
+```
+**
+Strength: Useful for seeing the distribution of the values of a numeric variable.
+
+Weakness: Difficult in interpreting any sort of pattern in the response proportion.
+**
+#c. Normalized histogram of duration, with overlay of response.
+```{r}
+ggplot(bank_train, aes(duration)) + geom_histogram(aes(fill = response), bins=10, position = "fill")
+```
+**
+Strength: Easier to interpret a pattern for the response variable.
+
+Weakness: Does not show the original(correct) distribution of the variable in focus (i.e., 'Duration')
+**
